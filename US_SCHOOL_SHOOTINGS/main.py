@@ -1,7 +1,7 @@
-
 import csv 
 import pandas as pd
 import plotly.express as ple
+import us
 
 class CleanData():
     def __init__(self, filepath: str) -> None:
@@ -24,9 +24,15 @@ class CleanData():
         print(self.data.head(5))
 
     def EDA(self):
-        # a map showing the occurence of shooting in each state
-        state_counts = self.data["state"].value_counts().reset_index()
-        state_counts.columns = ["state", "count"]
+        # a map showing the occurrence of shootings in each state
+        # Convert state names to abbreviations using the `us` package
+        self.data['state_abbr'] = self.data['state'].apply(lambda x: us.states.lookup(x).abbr if us.states.lookup(x) else None)
+
+        # Count occurrences by state abbreviation
+        state_counts = self.data['state_abbr'].value_counts().reset_index()
+        state_counts.columns = ['state', 'count']
+
+        #print(state_counts.describe())
 
         fig = ple.choropleth(
             state_counts,
@@ -35,8 +41,8 @@ class CleanData():
             color="count",
             color_continuous_scale="Blues",  # darker = higher
             scope="usa",
-            labels={"count": "Shooting Occurences"},
-            title="School Shooting Occurences by State"
+            labels={"count": "Shooting Occurrences"},
+            title="School Shooting Occurrences by State"
         )
 
         fig.show()
@@ -48,4 +54,4 @@ if __name__=="__main__":
     cleaner = CleanData("US_SCHOOL_SHOOTINGS/school-shootings-data.csv")
     cleaner.get_summary_stats()
     cleaner.EDA()
-    
+
